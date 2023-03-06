@@ -1,12 +1,19 @@
 import 'CoreLibs/graphics'
 import 'CoreLibs/sprites'
 import 'constants'
+import 'base-screen'
 
 local gfx = playdate.graphics
 
 local initMargin = 8
 local margin = 6
 local cellLength = 32
+
+class('DemoScreen').extends('Screen')
+
+function DemoScreen:init()
+    DemoScreen.super.init(self)
+end
 
 
 --row,col are 0-indexed!
@@ -59,7 +66,7 @@ local drawFnTable = {
 		[kSample.right] = drawInvertedCell,
 	}
 
-function DrawDemo()
+function DemoScreen:HandleUpdate()
     gfx.setColor(gfx.kColorWhite)
     gfx.fillRect(0,0,400,240)
 

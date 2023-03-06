@@ -2,7 +2,8 @@ import 'CoreLibs/graphics'
 import 'CoreLibs/sprites'
 import 'CoreLibs/crank'
 import 'constants'
-import 'draw'
+import 'attract-screen'
+import 'demo-screen'
 import 'save'
 import 'log'
 import 'system-menu'
@@ -16,13 +17,16 @@ local firstRun = true
 
 function loadSavedData()
   if SaveExists("example") then
-    Log("Loading previously saved data",targetWord)
+    Log("Loading previously saved data")
     local tbl =  LoadData("example")
     LogTable(tbl)
   else
     Log("no save present")
   end
 end
+
+--local currentScreen = AttractScreen()
+local currentScreen = DemoScreen()
 
 function playdate.update()
   if firstRun then
@@ -31,28 +35,37 @@ function playdate.update()
     firstRun = false
   end
 
-  DrawDemo()
+  currentScreen:HandleUpdate()
 end
 
-function playdate.leftButtonDown()    Log("pressed left")        end
-function playdate.rightButtonDown()   Log("pressed right")        end
-function playdate.upButtonDown()      Log("pressed up")          end
-function playdate.downButtonDown()    Log("pressed down")        end
-function playdate.AButtonDown()       Log("pressed a")               end
-function playdate.BButtonDown()       Log("pressed b")               end
-function playdate.cranked(change, acceleratedChange) 
-  local ticks = playdate.getCrankTicks(6)
-  if ticks == 1 then
-    Log("crank ticked forward")
-  elseif ticks == -1 then
-    Log("crank ticked backward")
-  end
+function playdate.leftButtonDown()  currentScreen:HandleLeft()    end
+function playdate.rightButtonDown() currentScreen:HandleRight()   end
+function playdate.upButtonDown()    currentScreen:HandleUp()      end
+function playdate.downButtonDown()  currentScreen:HandleDown()    end
+function playdate.AButtonDown()     currentScreen:HandleAButton() end
+function playdate.BButtonDown()     currentScreen:HandleBButton() end
+function playdate.cranked(change, acceleratedChange)
+  currentScreen:HandleCrank(change, acceleratedChange)
 end
 
 function HandleSavingState(mode)
   SaveData(mode)
 end
 
-function playdate.gameWillTerminate() HandleSavingState("terminate") end
-function playdate.deviceWillSleep()   HandleSavingState("sleep") end
-function playdate.deviceWillLock()    HandleSavingState("lock") end
+function playdate.gameWillTerminate()
+  currentScreen:HandleExit()
+  HandleSavingState("terminate")
+end
+function playdate.deviceWillSleep()
+  currentScreen:HandleExit()
+  HandleSavingState("sleep")
+end
+function playdate.deviceWillLock()
+  currentScreen:HandleExit()
+  HandleSavingState("lock")
+end
+
+function ChangeScreen(newScreen)
+  currentScreen:HandleExit()
+  currentScreen = newScreen
+end
